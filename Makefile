@@ -37,7 +37,7 @@ $(PROTO_OUT):
 	mkdir $(PROTO_OUT)
 
 ##### Compile proto files for go #####
-grpc: buf-lint api-linter buf-breaking clean go-grpc fix-path
+grpc: api-linter clean go-grpc fix-path
 
 go-grpc: clean $(PROTO_OUT)
 	printf $(COLOR) "Compile for go-gRPC..."
@@ -49,7 +49,10 @@ go-grpc: clean $(PROTO_OUT)
 		-I $(PROTO_ROOT) \
 		-p go-grpc_out=$(PROTO_PATHS) \
 		-p grpc-gateway_out=allow_patch_feature=false,$(PROTO_PATHS) \
-		-p doc_out=html,index.html,source_relative:$(PROTO_OUT)
+		-p doc_out=html,index.html,source_relative:$(PROTO_OUT) \
+		-p go-helpers_out=$(PROTO_PATHS) \
+		-p go-vtproto_opt=features=marshal+unmarshal+size+unmarshal_unsafe \
+		-p go-vtproto_out=$(PROTO_PATHS)
 
 fix-path:
 	mv -f $(PROTO_OUT)/temporal/api/* $(PROTO_OUT) && rm -rf $(PROTO_OUT)/temporal
@@ -90,6 +93,13 @@ api-linter-install:
 	go install github.com/googleapis/api-linter/cmd/api-linter@v1.32.3
 	go install github.com/itchyny/gojq/cmd/gojq@v0.12.14
 
+vtproto-install:
+	go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@latest
+
+mockgen-install:
+	printf $(COLOR) "Install/update mockgen..."
+	go install -modfile=build/go.mod github.com/golang/mock/mockgen
+
 buf-install:
 	printf $(COLOR) "Install/update buf..."
 	go install github.com/bufbuild/buf/cmd/buf@v1.27.0
@@ -112,7 +122,7 @@ buf-lint: $(STAMPDIR)/buf-mod-prune
 	(cd $(PROTO_ROOT) && buf lint)
 
 buf-breaking:
-	@printf $(COLOR) "Run buf breaking changes check against master branch..."	
+	@printf $(COLOR) "Run buf breaking changes check against master branch..."
 	@(cd $(PROTO_ROOT) && buf breaking --against 'https://github.com/temporalio/api.git#branch=master')
 
 ##### Clean #####
