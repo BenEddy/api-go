@@ -61,7 +61,9 @@ go-grpc: clean .go-helpers-installed $(PROTO_OUT)
 		--exclude=proto/api/google \
 		-p go-grpc_out=$(PROTO_PATHS) \
 		-p grpc-gateway_out=allow_patch_feature=false,$(PROTO_PATHS) \
-		-p go-helpers_out=$(PROTO_PATHS)
+		-p go-helpers_out=$(PROTO_PATHS) \
+		-p go-vtproto_opt=features=marshal+unmarshal+size+unmarshal_unsafe \
+		-p go-vtproto_out=$(PROTO_PATHS)
 
 	mv -f $(PROTO_OUT)/temporal/api/* $(PROTO_OUT) && rm -rf $(PROTO_OUT)/temporal
 
@@ -111,9 +113,12 @@ gen-proto-desc:
 ##### Plugins & tools #####
 grpc-install:
 	@printf $(COLOR) "Install/update grpc and plugins..."
-	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest 
+	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
+
+vtproto-install:
+	go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@latest
 
 mockgen-install:
 	printf $(COLOR) "Install/update mockgen..."
