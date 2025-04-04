@@ -5,7 +5,7 @@ all: install test
 install: grpc-install mockgen-install goimports-install update-proto
 
 # Compile proto files.
-proto: http-api-docs grpc goimports proxy grpc-mock copyright
+proto: http-api-docs grpc goimports proxy copyright
 
 # Update submodule and compile proto files.
 update-proto: update-proto-submodule proto gomodtidy
